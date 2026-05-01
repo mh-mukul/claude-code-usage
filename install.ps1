@@ -10,7 +10,7 @@
 $ErrorActionPreference = 'Stop'
 
 # ── Config ──────────────────────────────────────────────────────────────────
-$RepoUrl    = if ($env:REPO_URL)    { $env:REPO_URL }    else { 'https://github.com/mhmukul/claude-code-usage' }
+$RepoUrl    = if ($env:REPO_URL)    { $env:REPO_URL }    else { 'https://github.com/mh-mukul/claude-code-usage' }
 $Version    = if ($env:VERSION)     { $env:VERSION }     else { 'main' }
 $InstallDir = if ($env:INSTALL_DIR) { $env:INSTALL_DIR } else { "$env:LOCALAPPDATA\Programs\claude-usage" }
 $ScriptName = 'claude-usage'

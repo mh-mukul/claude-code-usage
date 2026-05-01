@@ -13,7 +13,7 @@
 set -euo pipefail
 
 # ── Config ──────────────────────────────────────────────────────────────────
-REPO_URL="${REPO_URL:-https://github.com/mhmukul/claude-code-usage}"
+REPO_URL="${REPO_URL:-https://github.com/mh-mukul/claude-code-usage}"
 VERSION="${VERSION:-main}"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 SCRIPT_NAME="claude-usage"

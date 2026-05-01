@@ -12,13 +12,13 @@ sole external dependency. No registration, no telemetry, no backend.
 ### Linux / macOS
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mhmukul/claude-code-usage/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/mh-mukul/claude-code-usage/main/install.sh | bash
 ```
 
 Pin a version:
 
 ```bash
-VERSION=v0.1.0 bash -c "$(curl -fsSL https://raw.githubusercontent.com/mhmukul/claude-code-usage/main/install.sh)"
+VERSION=v0.1.0 bash -c "$(curl -fsSL https://raw.githubusercontent.com/mh-mukul/claude-code-usage/main/install.sh)"
 ```
 
 The script drops a single `claude-usage` file into `~/.local/bin`. If
@@ -28,7 +28,7 @@ your shell rc.
 ### Windows (PowerShell)
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/mhmukul/claude-code-usage/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/mh-mukul/claude-code-usage/main/install.ps1 | iex
 ```
 
 Installs to `%LOCALAPPDATA%\Programs\claude-usage\` and writes a
