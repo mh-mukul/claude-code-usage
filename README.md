@@ -1,4 +1,4 @@
-# claude-usage
+# Claude Code Usage Dashboard
 
 Offline Claude Code usage dashboard. Reads your local
 `~/.claude/projects/*.jsonl` transcripts and renders a single-page
@@ -21,7 +21,7 @@ Pin a version:
 VERSION=v0.1.0 bash -c "$(curl -fsSL https://raw.githubusercontent.com/mh-mukul/claude-code-usage/main/install.sh)"
 ```
 
-The script drops a single `claude-usage` file into `~/.local/bin`. If
+The script drops a single `claude-code-usage` file into `~/.local/bin`. If
 that's not on your `$PATH`, the installer prints the line to add to
 your shell rc.
 
@@ -31,34 +31,34 @@ your shell rc.
 iwr -useb https://raw.githubusercontent.com/mh-mukul/claude-code-usage/main/install.ps1 | iex
 ```
 
-Installs to `%LOCALAPPDATA%\Programs\claude-usage\` and writes a
-`claude-usage.cmd` shim so you can type `claude-usage` from any prompt.
+Installs to `%LOCALAPPDATA%\Programs\claude-code-usage\` and writes a
+`claude-code-usage.cmd` shim so you can type `claude-code-usage` from any prompt.
 
 ### Manual install
 
 The whole app is a single Python file. Clone the repo (or download
-`claude-usage.py`) and run it directly:
+`claude-code-usage.py`) and run it directly:
 
 ```bash
-chmod +x claude-usage.py
-./claude-usage.py dashboard
+chmod +x claude-code-usage.py
+./claude-code-usage.py dashboard
 ```
 
 ## Usage
 
 ```
-claude-usage dashboard         # scan + open browser at http://localhost:8080
-claude-usage scan              # incremental scan only (no server)
-claude-usage today             # terminal table for today
-claude-usage week              # last 7 days
-claude-usage stats             # all-time totals
-claude-usage --help
+claude-code-usage dashboard         # scan + open browser at http://localhost:8080
+claude-code-usage scan              # incremental scan only (no server)
+claude-code-usage today             # terminal table for today
+claude-code-usage week              # last 7 days
+claude-code-usage stats             # all-time totals
+claude-code-usage --help
 ```
 
 Dashboard flags:
 
 ```
-claude-usage dashboard \
+claude-code-usage dashboard \
   --projects-dir /custom/path  \  # override scan dir
   --host 0.0.0.0               \  # bind address (default: localhost)
   --port 9000                  \  # default 8080; auto-walks if busy
@@ -106,21 +106,6 @@ Windows:
 .\uninstall.ps1
 .\uninstall.ps1 -Purge
 ```
-
-## Releasing a new version
-
-Maintainer flow (no PyPI, no wheel — single file in git):
-
-```bash
-# bump __version__ in claude-usage.py
-git add claude-usage.py
-git commit -m "release: v0.1.1"
-git tag v0.1.1
-git push origin main --tags
-```
-
-The installer's `VERSION` env var maps directly to the git ref, so
-end users can pin to any commit / tag / branch.
 
 ## License
 

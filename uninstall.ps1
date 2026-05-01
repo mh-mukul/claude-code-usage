@@ -1,4 +1,4 @@
-# uninstall.ps1 — remove claude-usage on Windows.
+# uninstall.ps1 — remove claude-code-usage on Windows.
 #
 # Pass -Purge to also delete the local database.
 
@@ -7,7 +7,7 @@ param(
     [switch]$Purge
 )
 
-$InstallDir = if ($env:INSTALL_DIR) { $env:INSTALL_DIR } else { "$env:LOCALAPPDATA\Programs\claude-usage" }
+$InstallDir = if ($env:INSTALL_DIR) { $env:INSTALL_DIR } else { "$env:LOCALAPPDATA\Programs\claude-code-usage" }
 
 if (Test-Path $InstallDir) {
     Remove-Item -Recurse -Force $InstallDir

@@ -1,26 +1,26 @@
-# install.ps1 — one-line installer for claude-usage on Windows.
+# install.ps1 — one-line installer for claude-code-usage on Windows.
 #
 #   iwr -useb <repo-raw>/install.ps1 | iex
 #
 # Env overrides:
 #   $env:VERSION   = 'v0.1.0'                 # pin to a tagged release
 #   $env:REPO_URL  = 'https://github.com/...'
-#   $env:INSTALL_DIR = "$env:LOCALAPPDATA\Programs\claude-usage"
+#   $env:INSTALL_DIR = "$env:LOCALAPPDATA\Programs\claude-code-usage"
 
 $ErrorActionPreference = 'Stop'
 
 # ── Config ──────────────────────────────────────────────────────────────────
 $RepoUrl    = if ($env:REPO_URL)    { $env:REPO_URL }    else { 'https://github.com/mh-mukul/claude-code-usage' }
 $Version    = if ($env:VERSION)     { $env:VERSION }     else { 'main' }
-$InstallDir = if ($env:INSTALL_DIR) { $env:INSTALL_DIR } else { "$env:LOCALAPPDATA\Programs\claude-usage" }
-$ScriptName = 'claude-usage'
+$InstallDir = if ($env:INSTALL_DIR) { $env:INSTALL_DIR } else { "$env:LOCALAPPDATA\Programs\claude-code-usage" }
+$ScriptName = 'claude-code-usage'
 
 # Derive raw URL.
 $RawUrl = $null
 if ($RepoUrl -match '^https://github.com/(.+)$') {
-    $RawUrl = "https://raw.githubusercontent.com/$($matches[1])/$Version/claude-usage.py"
+    $RawUrl = "https://raw.githubusercontent.com/$($matches[1])/$Version/claude-code-usage.py"
 } elseif ($RepoUrl -match '^https://gitlab') {
-    $RawUrl = "$RepoUrl/-/raw/$Version/claude-usage.py"
+    $RawUrl = "$RepoUrl/-/raw/$Version/claude-code-usage.py"
 } else {
     throw "Unrecognized REPO_URL host. Set REPO_URL to a github.com or gitlab.* URL."
 }
@@ -49,8 +49,8 @@ Write-Host "Found Python via: $Python"
 # ── 2. Ensure install dir ───────────────────────────────────────────────────
 New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 
-# ── 3. Download claude-usage.py ─────────────────────────────────────────────
-$Dest    = Join-Path $InstallDir 'claude-usage.py'
+# ── 3. Download claude-code-usage.py ─────────────────────────────────────────────
+$Dest    = Join-Path $InstallDir 'claude-code-usage.py'
 $CmdShim = Join-Path $InstallDir "$ScriptName.cmd"
 
 Write-Host "Downloading $RawUrl"
@@ -69,8 +69,8 @@ if (-not ($firstLine -match '^(#!|"""|\#)')) {
     throw "Downloaded file does not look like a Python script. Aborting."
 }
 
-# ── 4. Generate .cmd shim so users can type 'claude-usage' anywhere ─────────
-$shimBody = "@echo off`r`n$Python `"%~dp0claude-usage.py`" %*`r`n"
+# ── 4. Generate .cmd shim so users can type 'claude-code-usage' anywhere ─────────
+$shimBody = "@echo off`r`n$Python `"%~dp0claude-code-usage.py`" %*`r`n"
 Set-Content -Path $CmdShim -Value $shimBody -Encoding ASCII -NoNewline
 
 # ── 5. PATH check ───────────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ if ($userPath -notlike "*$InstallDir*") {
 
 # ── 6. Hint ─────────────────────────────────────────────────────────────────
 Write-Host ""
-Write-Host "claude-usage installed." -ForegroundColor Green
+Write-Host "claude-code-usage installed." -ForegroundColor Green
 Write-Host ""
 Write-Host "Next steps:"
 Write-Host "  $ScriptName dashboard         # scan + open browser"

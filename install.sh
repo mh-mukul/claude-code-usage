@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install.sh — one-line installer for claude-usage.
+# install.sh — one-line installer for claude-code-usage.
 #
 #   curl -fsSL <repo-raw>/install.sh | bash
 #
@@ -16,16 +16,16 @@ set -euo pipefail
 REPO_URL="${REPO_URL:-https://github.com/mh-mukul/claude-code-usage}"
 VERSION="${VERSION:-main}"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
-SCRIPT_NAME="claude-usage"
+SCRIPT_NAME="claude-code-usage"
 DRY_RUN="${DRY_RUN:-}"
 
 # Derive raw URL from REPO_URL host.
 case "$REPO_URL" in
   https://github.com/*)
-    RAW_URL="${REPO_URL/github.com/raw.githubusercontent.com}/${VERSION}/claude-usage.py"
+    RAW_URL="${REPO_URL/github.com/raw.githubusercontent.com}/${VERSION}/claude-code-usage.py"
     ;;
   https://gitlab.*)
-    RAW_URL="${REPO_URL}/-/raw/${VERSION}/claude-usage.py"
+    RAW_URL="${REPO_URL}/-/raw/${VERSION}/claude-code-usage.py"
     ;;
   *)
     echo "Unrecognized REPO_URL host. Set RAW_URL=... explicitly." >&2
@@ -71,7 +71,7 @@ case ":$PATH:" in
     export PATH=\"$INSTALL_DIR:\$PATH\"" ;;
 esac
 
-# ── 3. Download claude-usage.py ─────────────────────────────────────────────
+# ── 3. Download claude-code-usage.py ─────────────────────────────────────────────
 DEST="$INSTALL_DIR/$SCRIPT_NAME"
 say "Downloading $RAW_URL"
 say "→ $DEST"
@@ -103,7 +103,7 @@ fi
 # ── 5. Hint ─────────────────────────────────────────────────────────────────
 cat <<EOF
 
-claude-usage installed.
+claude-code-usage installed.
 
 Next steps:
   $SCRIPT_NAME dashboard         # scan + open browser

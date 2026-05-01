@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# uninstall.sh — remove claude-usage. Pass --purge to also delete ~/.claude/usage.db.
+# uninstall.sh — remove claude-code-usage. Pass --purge to also delete ~/.claude/usage.db.
 
 set -euo pipefail
 
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
-TARGET="$INSTALL_DIR/claude-usage"
+TARGET="$INSTALL_DIR/claude-code-usage"
 PURGE=0
 
 for arg in "$@"; do

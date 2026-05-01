@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""claude-usage — offline Claude Code usage dashboard.
+"""claude-code-usage — offline Claude Code usage dashboard.
 
 Reads ~/.claude/projects/*.jsonl, stores parsed turns/sessions in
 ~/.claude/usage.db, serves a single-page Chart.js dashboard on
@@ -9,12 +9,12 @@ Stdlib only. No registration, no telemetry, no network beyond the
 Chart.js CDN load (cached by browser after first paint).
 
 Usage:
-  claude-usage scan [--projects-dir PATH]
-  claude-usage today
-  claude-usage week
-  claude-usage stats
-  claude-usage dashboard [--projects-dir PATH] [--host HOST] [--port PORT] [--no-browser]
-  claude-usage version
+  claude-code-usage scan [--projects-dir PATH]
+  claude-code-usage today
+  claude-code-usage week
+  claude-code-usage stats
+  claude-code-usage dashboard [--projects-dir PATH] [--host HOST] [--port PORT] [--no-browser]
+  claude-code-usage version
 """
 
 import argparse
@@ -148,7 +148,8 @@ def parse_jsonl_file(filepath):
                     record = json.loads(line)
                 except json.JSONDecodeError:
                     continue
-                _parse_record(record, session_meta, seen_messages, turns_no_id, update_first=True)
+                _parse_record(record, session_meta, seen_messages,
+                              turns_no_id, update_first=True)
     except Exception as e:
         print(f"  Warning: error reading {filepath}: {e}")
     turns = turns_no_id + list(seen_messages.values())
@@ -172,7 +173,8 @@ def parse_jsonl_tail(filepath, skip_lines):
                     record = json.loads(line)
                 except json.JSONDecodeError:
                     continue
-                _parse_record(record, new_session_metas, seen_messages, turns_no_id, update_first=False)
+                _parse_record(record, new_session_metas,
+                              seen_messages, turns_no_id, update_first=False)
     except Exception as e:
         print(f"  Warning: {e}")
     new_turns = turns_no_id + list(seen_messages.values())
@@ -253,9 +255,9 @@ def calc_cost(model, inp, out, cache_read, cache_creation):
     if not p:
         return 0.0
     return (
-        inp            * p["input"]       / 1_000_000
-        + out          * p["output"]      / 1_000_000
-        + cache_read   * p["cache_read"]  / 1_000_000
+        inp * p["input"] / 1_000_000
+        + out * p["output"] / 1_000_000
+        + cache_read * p["cache_read"] / 1_000_000
         + cache_creation * p["cache_write"] / 1_000_000
     )
 
@@ -265,7 +267,8 @@ def calc_cost(model, inp, out, cache_read, cache_creation):
 # ─────────────────────────────────────────────────────────────────────────────
 
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
-XCODE_PROJECTS_DIR = Path.home() / "Library" / "Developer" / "Xcode" / "CodingAssistant" / "ClaudeAgentConfig" / "projects"
+XCODE_PROJECTS_DIR = Path.home() / "Library" / "Developer" / "Xcode" / \
+    "CodingAssistant" / "ClaudeAgentConfig" / "projects"
 DB_PATH = Path.home() / ".claude" / "usage.db"
 DEFAULT_PROJECTS_DIRS = [PROJECTS_DIR, XCODE_PROJECTS_DIR]
 
@@ -355,7 +358,8 @@ def upsert_sessions(conn, sessions):
                 (s["session_id"],),
             ).fetchone()["model"]
             new_model = s["model"]
-            model_to_set = new_model if model_priority(new_model) > model_priority(existing_model) else existing_model
+            model_to_set = new_model if model_priority(
+                new_model) > model_priority(existing_model) else existing_model
 
             conn.execute("""
                 UPDATE sessions SET
@@ -408,7 +412,8 @@ def scan(projects_dir=None, projects_dirs=None, db_path=DB_PATH, verbose=True):
             continue
         if verbose:
             print(f"Scanning {d} ...")
-        jsonl_files.extend(glob.glob(str(d / "**" / "*.jsonl"), recursive=True))
+        jsonl_files.extend(
+            glob.glob(str(d / "**" / "*.jsonl"), recursive=True))
     jsonl_files.sort()
 
     new_files = updated_files = skipped_files = total_turns = 0
@@ -446,7 +451,8 @@ def scan(projects_dir=None, projects_dirs=None, db_path=DB_PATH, verbose=True):
                 new_files += 1
         else:
             old_lines = row["lines"] if row else 0
-            new_session_metas, new_turns, line_count = parse_jsonl_tail(filepath, old_lines)
+            new_session_metas, new_turns, line_count = parse_jsonl_tail(
+                filepath, old_lines)
             if line_count <= old_lines:
                 conn.execute("UPDATE processed_files SET mtime = ? WHERE path = ?",
                              (mtime, filepath))
@@ -499,7 +505,7 @@ def scan(projects_dir=None, projects_dirs=None, db_path=DB_PATH, verbose=True):
 
 def get_dashboard_data(db_path=DB_PATH):
     if not Path(db_path).exists():
-        return {"error": "Database not found. Run: claude-usage scan"}
+        return {"error": "Database not found. Run: claude-code-usage scan"}
 
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
@@ -570,8 +576,10 @@ def get_dashboard_data(db_path=DB_PATH):
     sessions_all = []
     for r in session_rows:
         try:
-            t1 = datetime.fromisoformat(r["first_timestamp"].replace("Z", "+00:00"))
-            t2 = datetime.fromisoformat(r["last_timestamp"].replace("Z", "+00:00"))
+            t1 = datetime.fromisoformat(
+                r["first_timestamp"].replace("Z", "+00:00"))
+            t2 = datetime.fromisoformat(
+                r["last_timestamp"].replace("Z", "+00:00"))
             duration_min = round((t2 - t1).total_seconds() / 60, 1)
         except Exception:
             duration_min = 0
@@ -821,7 +829,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <footer>
   <div class="footer-content">
     <p>Cost estimates based on Anthropic API pricing (<a href="https://claude.com/pricing#api" target="_blank">claude.com/pricing#api</a>) as of April 2026. Only models containing <em>opus</em>, <em>sonnet</em>, or <em>haiku</em> in the name are included in cost calculations. Actual costs for Max/Pro subscribers differ from API pricing.</p>
-    <p>claude-usage <span id="footer-version"></span> &nbsp;&middot;&nbsp; All data stored locally in <code>~/.claude/usage.db</code> &nbsp;&middot;&nbsp; License: MIT</p>
+    <p>claude-code-usage <span id="footer-version"></span> &nbsp;&middot;&nbsp; All data stored locally in <code>~/.claude/usage.db</code> &nbsp;&middot;&nbsp; License: MIT</p>
   </div>
 </footer>
 
@@ -1625,7 +1633,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
             db_path = DB_PATH
             if Path(db_path).exists():
                 Path(db_path).unlink()
-            result = scan(db_path=db_path, projects_dirs=DEFAULT_PROJECTS_DIRS, verbose=False)
+            result = scan(db_path=db_path,
+                          projects_dirs=DEFAULT_PROJECTS_DIRS, verbose=False)
             body = json.dumps(result).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
@@ -1656,7 +1665,8 @@ def serve(host="localhost", port=8080, port_walk=10):
         except KeyboardInterrupt:
             print("\nStopped.")
         return actual_port
-    raise SystemExit(f"could not bind any port {port}..{port + port_walk}: {last_err}")
+    raise SystemExit(
+        f"could not bind any port {port}..{port + port_walk}: {last_err}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1681,7 +1691,7 @@ def hr(char="-", width=60):
 
 def require_db():
     if not DB_PATH.exists():
-        print("Database not found. Run: claude-usage scan", file=sys.stderr)
+        print("Database not found. Run: claude-code-usage scan", file=sys.stderr)
         sys.exit(1)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -1726,12 +1736,13 @@ def cmd_today(args):
     total_inp = total_out = total_cr = total_cc = total_turns = 0
     total_cost = 0.0
     for r in rows:
-        cost = calc_cost(r["model"], r["inp"] or 0, r["out"] or 0, r["cr"] or 0, r["cc"] or 0)
+        cost = calc_cost(r["model"], r["inp"] or 0, r["out"]
+                         or 0, r["cr"] or 0, r["cc"] or 0)
         total_cost += cost
         total_inp += r["inp"] or 0
         total_out += r["out"] or 0
-        total_cr  += r["cr"]  or 0
-        total_cc  += r["cc"]  or 0
+        total_cr += r["cr"] or 0
+        total_cc += r["cc"] or 0
         total_turns += r["turns"]
         print(f"  {r['model']:<30}  turns={r['turns']:<4}  in={fmt(r['inp'] or 0):<8}  out={fmt(r['out'] or 0):<8}  cost={fmt_cost(cost)}")
     hr()
@@ -1795,29 +1806,33 @@ def cmd_week(args):
     per_day = {}
     for r in by_day_model:
         d = r["day"]
-        bucket = per_day.setdefault(d, {"turns": 0, "inp": 0, "out": 0, "cost": 0.0})
+        bucket = per_day.setdefault(
+            d, {"turns": 0, "inp": 0, "out": 0, "cost": 0.0})
         bucket["turns"] += r["turns"]
-        bucket["inp"]   += r["inp"] or 0
-        bucket["out"]   += r["out"] or 0
-        bucket["cost"]  += calc_cost(r["model"], r["inp"] or 0, r["out"] or 0, r["cr"] or 0, r["cc"] or 0)
+        bucket["inp"] += r["inp"] or 0
+        bucket["out"] += r["out"] or 0
+        bucket["cost"] += calc_cost(r["model"], r["inp"]
+                                    or 0, r["out"] or 0, r["cr"] or 0, r["cc"] or 0)
 
     print("  By Day:")
     for i in range(7):
         d = (start_d + timedelta(days=i)).isoformat()
         b = per_day.get(d, {"turns": 0, "inp": 0, "out": 0, "cost": 0.0})
-        print(f"    {d}  turns={b['turns']:<4}  in={fmt(b['inp']):<8}  out={fmt(b['out']):<8}  cost={fmt_cost(b['cost'])}")
+        print(
+            f"    {d}  turns={b['turns']:<4}  in={fmt(b['inp']):<8}  out={fmt(b['out']):<8}  cost={fmt_cost(b['cost'])}")
     hr()
     print("  By Model:")
 
     total_inp = total_out = total_cr = total_cc = total_turns = 0
     total_cost = 0.0
     for r in by_model:
-        cost = calc_cost(r["model"], r["inp"] or 0, r["out"] or 0, r["cr"] or 0, r["cc"] or 0)
-        total_cost  += cost
-        total_inp   += r["inp"] or 0
-        total_out   += r["out"] or 0
-        total_cr    += r["cr"]  or 0
-        total_cc    += r["cc"]  or 0
+        cost = calc_cost(r["model"], r["inp"] or 0, r["out"]
+                         or 0, r["cr"] or 0, r["cc"] or 0)
+        total_cost += cost
+        total_inp += r["inp"] or 0
+        total_out += r["out"] or 0
+        total_cr += r["cr"] or 0
+        total_cc += r["cc"] or 0
         total_turns += r["turns"]
         print(f"    {r['model']:<30}  turns={r['turns']:<4}  in={fmt(r['inp'] or 0):<8}  out={fmt(r['out'] or 0):<8}  cost={fmt_cost(cost)}")
     hr()
@@ -1865,7 +1880,8 @@ def cmd_stats(args):
     """).fetchone()
 
     total_cost = sum(
-        calc_cost(r["model"], r["inp"] or 0, r["out"] or 0, r["cr"] or 0, r["cc"] or 0)
+        calc_cost(r["model"], r["inp"] or 0, r["out"]
+                  or 0, r["cr"] or 0, r["cc"] or 0)
         for r in by_model
     )
 
@@ -1879,16 +1895,21 @@ def cmd_stats(args):
     print(f"  Total sessions:   {session_info['sessions'] or 0:,}")
     print(f"  Total turns:      {fmt(totals['turns'] or 0)}")
     print()
-    print(f"  Input tokens:     {fmt(totals['inp'] or 0):<12}  (raw prompt tokens)")
-    print(f"  Output tokens:    {fmt(totals['out'] or 0):<12}  (generated tokens)")
-    print(f"  Cache read:       {fmt(totals['cr'] or 0):<12}  (90% cheaper than input)")
-    print(f"  Cache creation:   {fmt(totals['cc'] or 0):<12}  (25% premium on input)")
+    print(
+        f"  Input tokens:     {fmt(totals['inp'] or 0):<12}  (raw prompt tokens)")
+    print(
+        f"  Output tokens:    {fmt(totals['out'] or 0):<12}  (generated tokens)")
+    print(
+        f"  Cache read:       {fmt(totals['cr'] or 0):<12}  (90% cheaper than input)")
+    print(
+        f"  Cache creation:   {fmt(totals['cc'] or 0):<12}  (25% premium on input)")
     print()
     print(f"  Est. total cost:  ${total_cost:.4f}")
     hr()
     print("  By Model:")
     for r in by_model:
-        cost = calc_cost(r["model"], r["inp"] or 0, r["out"] or 0, r["cr"] or 0, r["cc"] or 0)
+        cost = calc_cost(r["model"], r["inp"] or 0, r["out"]
+                         or 0, r["cr"] or 0, r["cc"] or 0)
         print(f"    {r['model']:<30}  sessions={r['sessions']:<4}  turns={fmt(r['turns'] or 0):<6}  "
               f"in={fmt(r['inp'] or 0):<8}  out={fmt(r['out'] or 0):<8}  cost={fmt_cost(cost)}")
     hr()
@@ -1923,19 +1944,22 @@ def cmd_dashboard(args):
 
 
 def cmd_version(args):
-    print(f"claude-usage {__version__}")
+    print(f"claude-code-usage {__version__}")
 
 
 def build_parser():
     p = argparse.ArgumentParser(
-        prog="claude-usage",
+        prog="claude-code-usage",
         description="Offline Claude Code usage dashboard. Stdlib-only.",
     )
-    p.add_argument("--version", action="version", version=f"claude-usage {__version__}")
+    p.add_argument("--version", action="version",
+                   version=f"claude-code-usage {__version__}")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    sp = sub.add_parser("scan", help="Scan JSONL files and update the local database.")
-    sp.add_argument("--projects-dir", help="Override scan directory (default: ~/.claude/projects).")
+    sp = sub.add_parser(
+        "scan", help="Scan JSONL files and update the local database.")
+    sp.add_argument(
+        "--projects-dir", help="Override scan directory (default: ~/.claude/projects).")
     sp.set_defaults(func=cmd_scan)
 
     sp = sub.add_parser("today", help="Print today's usage summary.")
@@ -1947,11 +1971,14 @@ def build_parser():
     sp = sub.add_parser("stats", help="Print all-time statistics.")
     sp.set_defaults(func=cmd_stats)
 
-    sp = sub.add_parser("dashboard", help="Scan + start the local web dashboard.")
+    sp = sub.add_parser(
+        "dashboard", help="Scan + start the local web dashboard.")
     sp.add_argument("--projects-dir", help="Override scan directory.")
     sp.add_argument("--host", default=os.environ.get("HOST", "localhost"))
-    sp.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8080")))
-    sp.add_argument("--no-browser", action="store_true", help="Do not auto-open the browser.")
+    sp.add_argument("--port", type=int,
+                    default=int(os.environ.get("PORT", "8080")))
+    sp.add_argument("--no-browser", action="store_true",
+                    help="Do not auto-open the browser.")
     sp.set_defaults(func=cmd_dashboard)
 
     sp = sub.add_parser("version", help="Print version.")
